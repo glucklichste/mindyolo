@@ -26,6 +26,9 @@ def get_parser_export(parents=None):
     parser.add_argument("--seed", type=int, default=2, help="set global seed")
     parser.add_argument("--file_format", type=str, default="ONNX", help="treat as single-class dataset")
     parser.add_argument("--save_dir", type=str, default="./export", help="save dir")
+    parser.add_argument(
+        "--single_cls", type=ast.literal_eval, default=False, help="train multi-class data as single-class"
+    )
     return parser
 
 
