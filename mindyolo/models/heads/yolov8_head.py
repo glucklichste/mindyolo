@@ -17,7 +17,7 @@ class YOLOv8Head(nn.Cell):
 
         assert isinstance(stride, (tuple, list)) and len(stride) > 0
         assert isinstance(ch, (tuple, list)) and len(ch) > 0
-
+        self.strides = stride
         self.nc = nc  # number of classes
         self.nl = len(ch)  # number of detection layers
         self.reg_max = reg_max  # DFL channels (ch[0] // 16 to scale 4/8/12/16/20 for n/s/m/l/x)
@@ -73,8 +73,8 @@ class YOLOv8Head(nn.Cell):
 
         return out if self.training else (p, out)
 
-    @staticmethod
-    def make_anchors(feats, strides, grid_cell_offset=0.5):
+    # @staticmethod
+    def make_anchors(self, feats, strides, grid_cell_offset=0.5):
         """Generate anchors from features."""
         anchor_points, stride_tensor = (), ()
         dtype = feats[0].dtype
@@ -85,7 +85,9 @@ class YOLOv8Head(nn.Cell):
             # FIXME: Not supported on a specific model of machine
             sy, sx = meshgrid((sy, sx), indexing="ij")
             anchor_points += (ops.stack((sx, sy), -1).view(-1, 2),)
-            stride_tensor += (ops.ones((h * w, 1), dtype) * stride,)
+            # stride_tensor += (ops.ones((h * w, 1), dtype) * stride,)
+            one_tensor = ms.tensor((np.ones(shape=(h*w,1),dtype=np.float32)* self.strides[i]))
+            stride_tensor += (one_tensor,)
         return ops.concat(anchor_points), ops.concat(stride_tensor)
 
     @staticmethod
