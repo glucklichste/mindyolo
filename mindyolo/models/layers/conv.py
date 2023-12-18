@@ -3,7 +3,14 @@ from mindspore import nn, ops
 from .common import Identity
 from .utils import autopad
 
-
+class Silu(nn.cell):
+    def __init__(self):
+        super(SiLUForONXX, self).__init__()
+        self.sigmoid = ops.Sigmoid()
+    
+    def construct(self, x):
+        return self.sigmoid(x) * x
+    
 class ConvNormAct(nn.Cell):
     """Conv2d + BN + Act
 
@@ -49,7 +56,7 @@ class ConvNormAct(nn.Cell):
             self.bn = nn.SyncBatchNorm(c2, momentum=momentum, eps=eps)
         else:
             self.bn = nn.BatchNorm2d(c2, momentum=momentum, eps=eps)
-        self.act = nn.SiLU() if act is True else (act if isinstance(act, nn.Cell) else Identity)
+        self.act = Silu() if act is True else (act if isinstance(act, nn.Cell) else Identity)
 
     def construct(self, x):
         return self.act(self.bn(self.conv(x)))
@@ -96,7 +103,7 @@ class RepConv(nn.Cell):
 
         padding_11 = autopad(k, p) - k // 2
 
-        self.act = nn.SiLU() if act is True else (act if isinstance(act, nn.Cell) else Identity)
+        self.act = Silu() if act is True else (act if isinstance(act, nn.Cell) else Identity)
 
         if sync_bn:
             BatchNorm = nn.SyncBatchNorm
